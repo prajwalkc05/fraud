@@ -6,7 +6,9 @@ deploymentTarget = "autoscale"
 
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
-env = { "CI" = "true" }
+
+[deployment.postBuild.env]
+CI = "true"
 
 [workflows]
 runButton = "Project"
