@@ -66,7 +66,7 @@ const txSchema = z.object({
   amount: z.coerce.number().min(0.01, "Amount must be at least $0.01"),
   merchant: z.string().min(1, "Merchant name is required"),
   merchantCategory: z.string().min(1, "Category is required"),
-  cardId: z.coerce.number().min(1, "Please select a card"),
+  cardId: z.string().min(1, "Please select a card"),
   location: z.string().optional(),
 });
 
@@ -172,12 +172,12 @@ export default function Transactions() {
                   <FormItem>
                     <FormLabel>Card</FormLabel>
                     <FormControl>
-                      <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : undefined}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger><SelectValue placeholder={cards && cards.length > 0 ? "Select card" : "No cards available"} /></SelectTrigger>
                         <SelectContent>
                           {cards && cards.length > 0 ? (
                             (cards ?? []).filter((c) => !c.isBlocked).map((c) => (
-                              <SelectItem key={c.id} value={String(c.id)}>
+                              <SelectItem key={c.id} value={c.id}>
                                 {c.brand.toUpperCase()} ···· {c.last4}
                               </SelectItem>
                             ))
