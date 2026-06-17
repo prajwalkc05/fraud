@@ -82,8 +82,8 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
   }
   const data = parsed.data;
 
-  const card = await Card.findOne({ _id: data.cardId, userId: req.auth!.userId });
-  if (!card) {
+  const card = await Card.findById(data.cardId);
+  if (!card || card.userId.toString() !== req.auth!.userId.toString()) {
     res.status(404).json({ error: "Card not found" });
     return;
   }

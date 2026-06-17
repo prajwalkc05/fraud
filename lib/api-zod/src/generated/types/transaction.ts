@@ -13,7 +13,7 @@ export interface Transaction {
   amount: number;
   merchant: string;
   merchantCategory: string;
-  cardId: number;
+  cardId: string;
   cardLast4?: string;
   userId?: number;
   status: TransactionStatus;

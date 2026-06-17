@@ -10,7 +10,7 @@ export interface TransactionInput {
   amount: number;
   merchant: string;
   merchantCategory: string;
-  cardId: number;
+  cardId: string;
   location?: string;
   ipAddress?: string;
   deviceId?: string;

@@ -8,7 +8,7 @@
 import type { CardBrand } from './cardBrand';
 
 export interface Card {
-  id: number;
+  id: string;
   userId: number;
   last4: string;
   brand: CardBrand;

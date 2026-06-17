@@ -83,7 +83,7 @@ export interface Transaction {
   amount: number;
   merchant: string;
   merchantCategory: string;
-  cardId: number;
+  cardId: string;
   cardLast4?: string;
   userId?: number;
   status: TransactionStatus;
@@ -104,7 +104,7 @@ export interface TransactionInput {
   amount: number;
   merchant: string;
   merchantCategory: string;
-  cardId: number;
+  cardId: string;
   location?: string;
   ipAddress?: string;
   deviceId?: string;
@@ -141,7 +141,7 @@ export const CardBrand = {
 } as const;
 
 export interface Card {
-  id: number;
+  id: string;
   userId: number;
   last4: string;
   brand: CardBrand;

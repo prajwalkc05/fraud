@@ -89,7 +89,7 @@ export const ListTransactionsResponse = zod.object({
   "amount": zod.number(),
   "merchant": zod.string(),
   "merchantCategory": zod.string(),
-  "cardId": zod.number(),
+  "cardId": zod.string(),
   "cardLast4": zod.string().optional(),
   "userId": zod.number().optional(),
   "status": zod.enum(['approved', 'declined', 'flagged', 'pending']),
@@ -116,7 +116,7 @@ export const CreateTransactionBody = zod.object({
   "amount": zod.number(),
   "merchant": zod.string(),
   "merchantCategory": zod.string(),
-  "cardId": zod.number(),
+  "cardId": zod.string(),
   "location": zod.string().optional(),
   "ipAddress": zod.string().optional(),
   "deviceId": zod.string().optional()
@@ -135,7 +135,7 @@ export const GetTransactionResponse = zod.object({
   "amount": zod.number(),
   "merchant": zod.string(),
   "merchantCategory": zod.string(),
-  "cardId": zod.number(),
+  "cardId": zod.string(),
   "cardLast4": zod.string().optional(),
   "userId": zod.number().optional(),
   "status": zod.enum(['approved', 'declined', 'flagged', 'pending']),
@@ -168,7 +168,7 @@ export const ReviewTransactionResponse = zod.object({
   "amount": zod.number(),
   "merchant": zod.string(),
   "merchantCategory": zod.string(),
-  "cardId": zod.number(),
+  "cardId": zod.string(),
   "cardLast4": zod.string().optional(),
   "userId": zod.number().optional(),
   "status": zod.enum(['approved', 'declined', 'flagged', 'pending']),
@@ -188,7 +188,7 @@ export const ReviewTransactionResponse = zod.object({
  * @summary List cards for the authenticated user
  */
 export const ListCardsResponseItem = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "userId": zod.number(),
   "last4": zod.string(),
   "brand": zod.enum(['visa', 'mastercard', 'amex', 'discover']),
@@ -220,7 +220,7 @@ export const GetCardParams = zod.object({
 })
 
 export const GetCardResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "userId": zod.number(),
   "last4": zod.string(),
   "brand": zod.enum(['visa', 'mastercard', 'amex', 'discover']),
@@ -245,7 +245,7 @@ export const BlockCardBody = zod.object({
 })
 
 export const BlockCardResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "userId": zod.number(),
   "last4": zod.string(),
   "brand": zod.enum(['visa', 'mastercard', 'amex', 'discover']),
@@ -343,7 +343,7 @@ export const GetRecentFraudResponseItem = zod.object({
   "amount": zod.number(),
   "merchant": zod.string(),
   "merchantCategory": zod.string(),
-  "cardId": zod.number(),
+  "cardId": zod.string(),
   "cardLast4": zod.string().optional(),
   "userId": zod.number().optional(),
   "status": zod.enum(['approved', 'declined', 'flagged', 'pending']),
