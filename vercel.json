@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd artifacts/fraud-dashboard && npm install && npm run build",
+  "buildCommand": "pnpm run typecheck:libs && cd artifacts/fraud-dashboard && pnpm run build",
   "outputDirectory": "artifacts/fraud-dashboard/dist",
   "framework": "vite",
-  "installCommand": "npm install -g pnpm && pnpm install",
-  "devCommand": "cd artifacts/fraud-dashboard && npm run dev"
+  "installCommand": "pnpm install",
+  "devCommand": "cd artifacts/fraud-dashboard && pnpm run dev"
 }
