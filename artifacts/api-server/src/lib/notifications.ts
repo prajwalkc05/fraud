@@ -2,7 +2,7 @@ import { Notification } from "@workspace/db";
 import { logger } from "./logger";
 
 export async function createNotification(opts: {
-  userId: number;
+  userId: string;
   type: string;
   title: string;
   message: string;

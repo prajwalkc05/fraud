@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.SESSION_SECRET ?? "fraud-guard-secret-key";
 
 export interface AuthPayload {
-  userId: number;
+  userId: string;
   role: string;
 }
 

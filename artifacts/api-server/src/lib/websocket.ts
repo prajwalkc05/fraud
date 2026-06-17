@@ -21,12 +21,12 @@ export function initWebSocket(server: Server): void {
     const url = new URL(req.url ?? "", "http://localhost");
     const token = url.searchParams.get("token");
 
-    let userId: number | null = null;
+    let userId: string | null = null;
     let role = "user";
 
     if (token) {
       try {
-        const payload = jwt.verify(token, JWT_SECRET) as { userId: number; role: string };
+        const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
         userId = payload.userId;
         role = payload.role;
       } catch {
@@ -56,7 +56,7 @@ export function initWebSocket(server: Server): void {
   logger.info("WebSocket server initialized on /api/ws");
 }
 
-export function broadcast(event: WsEvent, targetUserId?: number): void {
+export function broadcast(event: WsEvent, targetUserId?: string): void {
   if (!wss) return;
 
   const message = JSON.stringify(event);
@@ -64,7 +64,7 @@ export function broadcast(event: WsEvent, targetUserId?: number): void {
   wss.clients.forEach((client) => {
     if (client.readyState !== WebSocket.OPEN) return;
 
-    const cUserId = (client as any).userId as number | null;
+    const cUserId = (client as any).userId as string | null;
     const cRole = (client as any).role as string;
 
     // Admins receive all events; users only receive their own events
