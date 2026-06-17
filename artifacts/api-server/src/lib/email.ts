@@ -17,10 +17,8 @@ function getTransporter(): nodemailer.Transporter {
         user: SMTP_EMAIL,
         pass: SMTP_PASSWORD,
       },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
+      family: 4,
+    } as any);
   }
   return transporter;
 }
@@ -70,7 +68,7 @@ const BADGE = (color: string) =>
 function fraudAlertHtml(opts: {
   userName: string; amount: number; merchant: string;
   riskScore: number; riskLevel: string; signals: string[];
-  transactionId: number; cardLast4?: string | null;
+  transactionId: string; cardLast4?: string | null;
 }) {
   const color = opts.riskLevel === "critical" ? "#f85149" : opts.riskLevel === "high" ? "#d29922" : "#3fb950";
   return `<div style="${BASE_STYLE}"><div style="${CARD_STYLE}">
