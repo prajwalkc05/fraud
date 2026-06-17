@@ -37,6 +37,7 @@ minimumReleaseAgeExclude:
 packages:
   - artifacts/api-server
   - artifacts/mockup-sandbox
+  - artifacts/fraud-dashboard
   - lib/*
   - lib/integrations/*
   - scripts

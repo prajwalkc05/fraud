@@ -156,7 +156,7 @@ export default function Transactions() {
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                         <SelectContent>
                           {["retail", "grocery", "dining", "travel", "entertainment", "gas", "healthcare", "crypto", "gambling", "wire_transfer"].map((c) => (
@@ -172,7 +172,7 @@ export default function Transactions() {
                   <FormItem>
                     <FormLabel>Card</FormLabel>
                     <FormControl>
-                      <Select onValueChange={(v) => field.onChange(Number(v))}>
+                      <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : undefined}>
                         <SelectTrigger><SelectValue placeholder="Select card" /></SelectTrigger>
                         <SelectContent>
                           {(cards ?? []).filter((c) => !c.isBlocked).map((c) => (
