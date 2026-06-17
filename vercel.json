@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm run typecheck:libs && cd artifacts/fraud-dashboard && pnpm run build",
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm run typecheck:libs && cd artifacts/fraud-dashboard && pnpm run build",
   "outputDirectory": "artifacts/fraud-dashboard/dist",
   "framework": "vite",
-  "installCommand": "pnpm install",
+  "installCommand": "pnpm install --frozen-lockfile",
   "devCommand": "cd artifacts/fraud-dashboard && pnpm run dev"
 }
