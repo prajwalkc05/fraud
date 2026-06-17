@@ -1,19 +1,26 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import mongoose, { Schema, Document } from "mongoose";
 
-export const cardsTable = pgTable("cards", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  last4: text("last4").notNull(),
-  brand: text("brand").notNull(),
-  expiryMonth: integer("expiry_month").notNull(),
-  expiryYear: integer("expiry_year").notNull(),
-  isBlocked: boolean("is_blocked").notNull().default(false),
-  blockReason: text("block_reason"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export interface ICard extends Document {
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  last4: string;
+  brand: string;
+  expiryMonth: number;
+  expiryYear: number;
+  isBlocked: boolean;
+  blockReason?: string;
+  createdAt: Date;
+}
+
+const CardSchema = new Schema<ICard>({
+  userId: { type: Schema.Types.ObjectId, required: true },
+  last4: { type: String, required: true },
+  brand: { type: String, required: true },
+  expiryMonth: { type: Number, required: true },
+  expiryYear: { type: Number, required: true },
+  isBlocked: { type: Boolean, default: false },
+  blockReason: String,
+  createdAt: { type: Date, default: Date.now },
 });
 
-export const insertCardSchema = createInsertSchema(cardsTable).omit({ id: true, createdAt: true });
-export type InsertCard = z.infer<typeof insertCardSchema>;
-export type Card = typeof cardsTable.$inferSelect;
+export const Card = mongoose.models.Card || mongoose.model<ICard>("Card", CardSchema);

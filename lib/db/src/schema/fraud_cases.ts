@@ -1,19 +1,38 @@
-import { pgTable, serial, integer, text, varchar, timestamp, decimal } from "drizzle-orm/pg-core";
+import mongoose, { Schema, Document } from "mongoose";
 
-export const fraudCasesTable = pgTable("fraud_cases", {
-  id: serial("id").primaryKey(),
-  caseNumber: varchar("case_number", { length: 32 }).notNull().unique(),
-  userId: integer("user_id").notNull(),
-  transactionId: integer("transaction_id"),
-  assignedTo: integer("assigned_to"),
-  status: varchar("status", { length: 32 }).notNull().default("open"),
-  priority: varchar("priority", { length: 16 }).notNull().default("medium"),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
-  resolution: text("resolution"),
-  riskScore: decimal("risk_score", { precision: 5, scale: 2 }),
-  amountInvolved: decimal("amount_involved", { precision: 12, scale: 2 }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  closedAt: timestamp("closed_at"),
+export interface IFraudCase extends Document {
+  _id: mongoose.Types.ObjectId;
+  caseNumber: string;
+  userId: mongoose.Types.ObjectId;
+  transactionId?: mongoose.Types.ObjectId;
+  assignedTo?: mongoose.Types.ObjectId;
+  status: string;
+  priority: string;
+  title: string;
+  description?: string;
+  resolution?: string;
+  riskScore?: number;
+  amountInvolved?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  closedAt?: Date;
+}
+
+const FraudCaseSchema = new Schema<IFraudCase>({
+  caseNumber: { type: String, required: true, unique: true },
+  userId: { type: Schema.Types.ObjectId, required: true },
+  transactionId: Schema.Types.ObjectId,
+  assignedTo: Schema.Types.ObjectId,
+  status: { type: String, default: "open" },
+  priority: { type: String, default: "medium" },
+  title: { type: String, required: true },
+  description: String,
+  resolution: String,
+  riskScore: Number,
+  amountInvolved: Number,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  closedAt: Date,
 });
+
+export const FraudCase = mongoose.models.FraudCase || mongoose.model<IFraudCase>("FraudCase", FraudCaseSchema);

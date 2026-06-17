@@ -2,6 +2,7 @@ import http from "http";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { initWebSocket } from "./lib/websocket";
+import { connectDB } from "@workspace/db";
 
 const rawPort = process.env["PORT"];
 
@@ -17,15 +18,23 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const server = http.createServer(app);
+connectDB()
+  .then(() => {
+    logger.info("MongoDB connected");
+    
+    const server = http.createServer(app);
+    initWebSocket(server);
 
-initWebSocket(server);
+    server.listen(port, () => {
+      logger.info({ port }, "Server listening");
+    });
 
-server.listen(port, () => {
-  logger.info({ port }, "Server listening");
-});
-
-server.on("error", (err) => {
-  logger.error({ err }, "Server error");
-  process.exit(1);
-});
+    server.on("error", (err) => {
+      logger.error({ err }, "Server error");
+      process.exit(1);
+    });
+  })
+  .catch((err) => {
+    logger.error({ err }, "MongoDB connection failed");
+    process.exit(1);
+  });

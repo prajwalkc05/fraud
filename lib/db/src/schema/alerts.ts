@@ -1,17 +1,22 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import mongoose, { Schema, Document } from "mongoose";
 
-export const alertsTable = pgTable("alerts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  type: text("type").notNull(),
-  message: text("message").notNull(),
-  transactionId: integer("transaction_id"),
-  isRead: boolean("is_read").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export interface IAlert extends Document {
+  _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  type: string;
+  message: string;
+  transactionId?: mongoose.Types.ObjectId;
+  isRead: boolean;
+  createdAt: Date;
+}
+
+const AlertSchema = new Schema<IAlert>({
+  userId: { type: Schema.Types.ObjectId, required: true },
+  type: { type: String, required: true },
+  message: { type: String, required: true },
+  transactionId: Schema.Types.ObjectId,
+  isRead: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
 });
 
-export const insertAlertSchema = createInsertSchema(alertsTable).omit({ id: true, createdAt: true });
-export type InsertAlert = z.infer<typeof insertAlertSchema>;
-export type Alert = typeof alertsTable.$inferSelect;
+export const Alert = mongoose.models.Alert || mongoose.model<IAlert>("Alert", AlertSchema);

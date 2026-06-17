@@ -1,17 +1,22 @@
-import { pgTable, text, serial, integer, real, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import mongoose, { Schema, Document } from "mongoose";
 
-export const fraudLogsTable = pgTable("fraud_logs", {
-  id: serial("id").primaryKey(),
-  transactionId: integer("transaction_id").notNull(),
-  riskScore: real("risk_score").notNull(),
-  riskLevel: text("risk_level").notNull(),
-  fraudProbability: real("fraud_probability").notNull(),
-  signals: text("signals").array().notNull().default([]),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export interface IFraudLog extends Document {
+  _id: mongoose.Types.ObjectId;
+  transactionId: mongoose.Types.ObjectId;
+  riskScore: number;
+  riskLevel: string;
+  fraudProbability: number;
+  signals: string[];
+  createdAt: Date;
+}
+
+const FraudLogSchema = new Schema<IFraudLog>({
+  transactionId: { type: Schema.Types.ObjectId, required: true },
+  riskScore: { type: Number, required: true },
+  riskLevel: { type: String, required: true },
+  fraudProbability: { type: Number, required: true },
+  signals: { type: [String], default: [] },
+  createdAt: { type: Date, default: Date.now },
 });
 
-export const insertFraudLogSchema = createInsertSchema(fraudLogsTable).omit({ id: true, createdAt: true });
-export type InsertFraudLog = z.infer<typeof insertFraudLogSchema>;
-export type FraudLog = typeof fraudLogsTable.$inferSelect;
+export const FraudLog = mongoose.models.FraudLog || mongoose.model<IFraudLog>("FraudLog", FraudLogSchema);

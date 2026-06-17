@@ -1,4 +1,4 @@
-import { db, auditLogsTable } from "@workspace/db";
+import { AuditLog } from "@workspace/db";
 import { Request } from "express";
 import { logger } from "./logger";
 
@@ -12,7 +12,7 @@ export async function auditLog(opts: {
   status?: "success" | "failure";
 }): Promise<void> {
   try {
-    await db.insert(auditLogsTable).values({
+    await AuditLog.create({
       userId: opts.userId ?? opts.req?.auth?.userId ?? null,
       action: opts.action,
       resource: opts.resource,

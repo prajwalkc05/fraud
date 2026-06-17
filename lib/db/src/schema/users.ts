@@ -1,23 +1,34 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import mongoose, { Schema, Document } from "mongoose";
 
-export const usersTable = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  name: text("name").notNull(),
-  role: text("role").notNull().default("user"),
-  status: text("status").notNull().default("active"),
-  failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
-  lockedUntil: timestamp("locked_until", { withTimezone: true }),
-  passwordResetToken: text("password_reset_token"),
-  passwordResetExpires: timestamp("password_reset_expires", { withTimezone: true }),
-  twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
-  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId;
+  email: string;
+  passwordHash: string;
+  name: string;
+  role: string;
+  status: string;
+  failedLoginAttempts: number;
+  lockedUntil?: Date;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
+  twoFactorEnabled: boolean;
+  lastLoginAt?: Date;
+  createdAt: Date;
+}
+
+const UserSchema = new Schema<IUser>({
+  email: { type: String, required: true, unique: true },
+  passwordHash: { type: String, required: true },
+  name: { type: String, required: true },
+  role: { type: String, required: true, default: "user" },
+  status: { type: String, required: true, default: "active" },
+  failedLoginAttempts: { type: Number, default: 0 },
+  lockedUntil: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+  twoFactorEnabled: { type: Boolean, default: false },
+  lastLoginAt: Date,
+  createdAt: { type: Date, default: Date.now },
 });
 
-export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true });
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof usersTable.$inferSelect;
+export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

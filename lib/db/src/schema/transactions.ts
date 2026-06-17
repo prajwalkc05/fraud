@@ -1,27 +1,42 @@
-import { pgTable, text, serial, integer, real, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import mongoose, { Schema, Document } from "mongoose";
 
-export const transactionsTable = pgTable("transactions", {
-  id: serial("id").primaryKey(),
-  amount: real("amount").notNull(),
-  merchant: text("merchant").notNull(),
-  merchantCategory: text("merchant_category").notNull(),
-  cardId: integer("card_id").notNull(),
-  cardLast4: text("card_last4"),
-  userId: integer("user_id").notNull(),
-  status: text("status").notNull().default("pending"),
-  riskScore: real("risk_score").notNull().default(0),
-  riskLevel: text("risk_level").notNull().default("low"),
-  fraudProbability: real("fraud_probability").notNull().default(0),
-  location: text("location"),
-  ipAddress: text("ip_address"),
-  deviceId: text("device_id"),
-  reviewNote: text("review_note"),
-  reviewedBy: integer("reviewed_by"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+export interface ITransaction extends Document {
+  _id: mongoose.Types.ObjectId;
+  amount: number;
+  merchant: string;
+  merchantCategory: string;
+  cardId: mongoose.Types.ObjectId;
+  cardLast4?: string;
+  userId: mongoose.Types.ObjectId;
+  status: string;
+  riskScore: number;
+  riskLevel: string;
+  fraudProbability: number;
+  location?: string;
+  ipAddress?: string;
+  deviceId?: string;
+  reviewNote?: string;
+  reviewedBy?: mongoose.Types.ObjectId;
+  createdAt: Date;
+}
+
+const TransactionSchema = new Schema<ITransaction>({
+  amount: { type: Number, required: true },
+  merchant: { type: String, required: true },
+  merchantCategory: { type: String, required: true },
+  cardId: { type: Schema.Types.ObjectId, required: true },
+  cardLast4: String,
+  userId: { type: Schema.Types.ObjectId, required: true },
+  status: { type: String, default: "pending" },
+  riskScore: { type: Number, default: 0 },
+  riskLevel: { type: String, default: "low" },
+  fraudProbability: { type: Number, default: 0 },
+  location: String,
+  ipAddress: String,
+  deviceId: String,
+  reviewNote: String,
+  reviewedBy: Schema.Types.ObjectId,
+  createdAt: { type: Date, default: Date.now },
 });
 
-export const insertTransactionSchema = createInsertSchema(transactionsTable).omit({ id: true, createdAt: true });
-export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
-export type Transaction = typeof transactionsTable.$inferSelect;
+export const Transaction = mongoose.models.Transaction || mongoose.model<ITransaction>("Transaction", TransactionSchema);

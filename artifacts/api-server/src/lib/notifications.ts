@@ -1,4 +1,4 @@
-import { db, notificationsTable } from "@workspace/db";
+import { Notification } from "@workspace/db";
 import { logger } from "./logger";
 
 export async function createNotification(opts: {
@@ -10,7 +10,7 @@ export async function createNotification(opts: {
   emailSent?: boolean;
 }): Promise<void> {
   try {
-    await db.insert(notificationsTable).values({
+    await Notification.create({
       userId: opts.userId,
       type: opts.type,
       title: opts.title,
