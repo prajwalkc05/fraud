@@ -4,20 +4,28 @@ import { logger } from "./logger";
 const SMTP_EMAIL = process.env.SMTP_EMAIL ?? "";
 const SMTP_PASSWORD = process.env.SMTP_PASSWORD ?? "";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "hhr135696@gmail.com";
+const SMTP_HOST = process.env.SMTP_HOST ?? "smtp.gmail.com";
+const SMTP_PORT = parseInt(process.env.SMTP_PORT ?? "465", 10);
 
 let transporter: nodemailer.Transporter | null = null;
 
 function getTransporter(): nodemailer.Transporter {
   if (!transporter) {
     transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_PORT === 465,
       auth: {
         user: SMTP_EMAIL,
         pass: SMTP_PASSWORD,
       },
-      family: 4,
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3',
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     } as any);
   }
   return transporter;
