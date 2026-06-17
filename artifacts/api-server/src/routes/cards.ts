@@ -77,7 +77,7 @@ router.patch("/cards/:id/block", requireAuth, async (req, res): Promise<void> =>
     const user = await User.findById(card.userId);
     if (user) {
       void createNotification({
-        userId: Number(card.userId),
+        userId: card.userId,
         type: "card_blocked",
         title: "Card Blocked",
         message: `Your card ending in ${card.last4} has been blocked. Reason: ${body.data.reason ?? "Blocked by user"}`,

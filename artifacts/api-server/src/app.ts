@@ -50,6 +50,14 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 app.use("/api/auth/forgot-password", authLimiter);
 
+app.get("/", (_req, res) => {
+  res.json({
+    status: "ok",
+    service: "Fraud Sentinel API",
+    health: "/api/healthz",
+  });
+});
+
 app.use("/api", router);
 
 export default app;

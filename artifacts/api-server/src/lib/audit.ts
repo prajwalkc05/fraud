@@ -4,7 +4,7 @@ import { logger } from "./logger";
 
 export async function auditLog(opts: {
   req?: Request;
-  userId?: number;
+  userId?: string;
   action: string;
   resource: string;
   resourceId?: string | number;

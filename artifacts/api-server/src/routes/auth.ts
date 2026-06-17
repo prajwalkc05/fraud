@@ -62,7 +62,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       ...(shouldLock ? { lockedUntil: new Date(Date.now() + LOCK_DURATION_MS) } : {}),
     });
 
-    await auditLog({ req, userId: Number(user._id), action: "login_failed", resource: "auth", status: "failure" });
+    await auditLog({ req, userId: user._id.toString(), action: "login_failed", resource: "auth", status: "failure" });
     res.status(401).json({
       error: shouldLock
         ? `Account locked after ${MAX_FAILED_ATTEMPTS} failed attempts. Try again in 15 minutes.`
@@ -73,7 +73,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 
   await User.findByIdAndUpdate(user._id, { failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() });
 
-  const token = signToken({ userId: Number(user._id), role: user.role });
+  const token = signToken({ userId: user._id.toString(), role: user.role });
 
   const ua = String(req.headers["user-agent"] ?? "");
   const ip = String(req.ip ?? req.socket.remoteAddress ?? "");
@@ -93,11 +93,11 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     isTrusted: !isNewDevice,
   });
 
-  await auditLog({ req, userId: Number(user._id), action: "login_success", resource: "auth" });
+  await auditLog({ req, userId: user._id.toString(), action: "login_success", resource: "auth" });
 
   if (isNewDevice) {
     void createNotification({
-      userId: Number(user._id),
+      userId: user._id.toString(),
       type: "new_device_login",
       title: "New Device Login",
       message: `A new login was detected from ${deviceName} (${ip})`,
@@ -117,7 +117,7 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   res.json({
     token,
     user: {
-      id: Number(user._id),
+      id: user._id.toString(),
       email: user.email,
       name: user.name,
       role: user.role,
@@ -142,13 +142,13 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await User.create({ email, passwordHash, name, role: "user", status: "active" });
 
-  await auditLog({ req, userId: Number(user._id), action: "register", resource: "auth" });
+  await auditLog({ req, userId: user._id.toString(), action: "register", resource: "auth" });
 
-  const token = signToken({ userId: Number(user._id), role: user.role });
+  const token = signToken({ userId: user._id.toString(), role: user.role });
   res.status(201).json({
     token,
     user: {
-      id: Number(user._id),
+      id: user._id.toString(),
       email: user.email,
       name: user.name,
       role: user.role,
@@ -176,7 +176,7 @@ router.post("/auth/forgot-password", async (req, res): Promise<void> => {
 
   await User.findByIdAndUpdate(user._id, { passwordResetToken: resetToken, passwordResetExpires: expires });
 
-  await auditLog({ req, userId: Number(user._id), action: "password_reset_requested", resource: "auth" });
+  await auditLog({ req, userId: user._id.toString(), action: "password_reset_requested", resource: "auth" });
 
   void sendPasswordResetEmail({
     userName: user.name,
@@ -209,7 +209,7 @@ router.post("/auth/reset-password", async (req, res): Promise<void> => {
   const passwordHash = await bcrypt.hash(String(newPassword), 12);
   await User.findByIdAndUpdate(user._id, { passwordHash, passwordResetToken: null, passwordResetExpires: null, failedLoginAttempts: 0, lockedUntil: null });
 
-  await auditLog({ req, userId: Number(user._id), action: "password_reset_completed", resource: "auth" });
+  await auditLog({ req, userId: user._id.toString(), action: "password_reset_completed", resource: "auth" });
   res.json({ message: "Password reset successfully" });
 });
 
@@ -224,7 +224,7 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   res.json({
-    id: Number(user._id),
+    id: user._id.toString(),
     email: user.email,
     name: user.name,
     role: user.role,
