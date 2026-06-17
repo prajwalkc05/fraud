@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import "@/lib/api";
 import { Sidebar } from "@/components/sidebar";
+import { useState } from "react";
 
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -23,14 +24,16 @@ import Notifications from "@/pages/notifications";
 import FraudCases from "@/pages/fraud-cases";
 import AuditLogs from "@/pages/audit-logs";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30_000,
+function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        staleTime: 30_000,
+      },
     },
-  },
-});
+  });
+}
 
 function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType; adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
@@ -104,6 +107,8 @@ function AppRouter() {
 }
 
 function App() {
+  const [queryClient] = useState(() => createQueryClient());
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
