@@ -1,7 +1,7 @@
 [build]
   base = "."
   command = "pnpm install --frozen-lockfile && pnpm run typecheck:libs && cd artifacts/fraud-dashboard && pnpm run build"
-  publish = "artifacts/fraud-dashboard/dist"
+  publish = "artifacts/fraud-dashboard/dist/public"
 
 [build.environment]
   NODE_VERSION = "20"
