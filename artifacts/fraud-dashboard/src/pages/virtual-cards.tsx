@@ -167,7 +167,7 @@ function GenerateDialog({ onSuccess }: { onSuccess: () => void }) {
 
 export default function VirtualCards() {
   const queryClient = useQueryClient();
-  const { data: cards = [], refetch, isLoading } = useListVirtualCards();
+  const { data: cards = [], refetch, isLoading, isRefetching } = useListVirtualCards();
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
 
   const deactivate = useDeactivateVirtualCard({
@@ -199,8 +199,8 @@ export default function VirtualCards() {
           <p className="text-sm text-muted-foreground mt-1">One-time or limited-use virtual cards for safe online payments</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching} className="gap-2">
+            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
           <GenerateDialog onSuccess={() => refetch()} />
         </div>

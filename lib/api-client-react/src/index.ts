@@ -205,7 +205,7 @@ export function useCreateCard(opts?: { mutation?: Partial<UseMutationOptions<any
 
 export function useBlockCard(opts?: { mutation?: Partial<UseMutationOptions<any, Error, any>> }) {
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { blocked: boolean; reason?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { blocked: boolean; reason?: string } }) =>
       fetchAPI(`/cards/${id}/block`, {
         method: "PATCH",
         body: JSON.stringify(data),
