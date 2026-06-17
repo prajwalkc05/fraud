@@ -34,6 +34,14 @@ Fraud Sentinel is a real-time credit card fraud detection and monitoring system 
 - Advanced Analytics
 - Real-time Database Integration
 
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment instructions on Render.
+
+**Quick Deploy:**
+- Frontend: https://fraud-sentinel-dashboard.onrender.com
+- Backend API: https://fraud-9lts.onrender.com/api
+
 ## Author
 Harshitha R
 # fraud

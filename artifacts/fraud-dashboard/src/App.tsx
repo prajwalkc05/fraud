@@ -95,11 +95,9 @@ function AppRouter() {
 function App() {
   return (
     <TooltipProvider>
-      <AuthProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <AppRouter />
-        </WouterRouter>
-      </AuthProvider>
+      <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+        <AppRouter />
+      </WouterRouter>
       <Toaster />
     </TooltipProvider>
   );

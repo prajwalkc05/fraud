@@ -1,6 +1,6 @@
 import { useMutation, useQuery, UseQueryOptions, UseMutationOptions } from "@tanstack/react-query";
 
-const API_BASE_URL = "https://fraud-9lts.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://fraud-9lts.onrender.com/api";
 
 let _tokenGetter: (() => string | null) | null = null;
 
