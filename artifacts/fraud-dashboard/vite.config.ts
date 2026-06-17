@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-const port = Number(process.env.PORT ?? 5173);
+const port = Number(process.env.PORT ?? 3001);
 const basePath = process.env.BASE_PATH ?? "/";
 
 export default defineConfig({
@@ -12,7 +12,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
-      "@workspace/api-client-react": path.resolve(import.meta.dirname, "src/lib/api-client-stub.ts"),
     },
     dedupe: ["react", "react-dom"],
   },

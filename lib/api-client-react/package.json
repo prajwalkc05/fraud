@@ -7,9 +7,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "^5.0.0"
   },
-  "peerDependencies": {
-    "react": ">=18"
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "~5.9.3"
   }
 }
