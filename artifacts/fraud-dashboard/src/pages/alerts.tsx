@@ -29,7 +29,7 @@ export default function Alerts() {
   const qc = useQueryClient();
   const { toast } = useToast();
 
-  function handleMarkRead(id: number) {
+  function handleMarkRead(id: string) {
     markRead.mutate(
       { id },
       {

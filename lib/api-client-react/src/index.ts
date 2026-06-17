@@ -225,7 +225,7 @@ export function useListAlerts(opts?: { query?: Partial<UseQueryOptions> }) {
 
 export function useMarkAlertRead(opts?: { mutation?: Partial<UseMutationOptions<any, Error, any>> }) {
   return useMutation({
-    mutationFn: ({ id }: { id: number }) =>
+    mutationFn: ({ id }: { id: string }) =>
       fetchAPI(`/alerts/${id}/read`, {
         method: "PATCH",
       }),
