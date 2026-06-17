@@ -1,8 +1,13 @@
 import http from "http";
+import { config } from "dotenv";
+import { resolve } from "path";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { initWebSocket } from "./lib/websocket";
 import { connectDB } from "@workspace/db";
+
+// Load .env from workspace root
+config({ path: resolve(import.meta.dirname, "../../../.env") });
 
 const rawPort = process.env["PORT"];
 
