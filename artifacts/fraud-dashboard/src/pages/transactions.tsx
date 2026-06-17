@@ -63,10 +63,10 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 const txSchema = z.object({
-  amount: z.coerce.number().min(0.01),
-  merchant: z.string().min(1),
-  merchantCategory: z.string().min(1),
-  cardId: z.coerce.number().min(1),
+  amount: z.coerce.number().min(0.01, "Amount must be at least $0.01"),
+  merchant: z.string().min(1, "Merchant name is required"),
+  merchantCategory: z.string().min(1, "Category is required"),
+  cardId: z.coerce.number().min(1, "Please select a card"),
   location: z.string().optional(),
 });
 
@@ -93,7 +93,7 @@ export default function Transactions() {
 
   const form = useForm<z.infer<typeof txSchema>>({
     resolver: zodResolver(txSchema),
-    defaultValues: { amount: 0, merchant: "", merchantCategory: "", cardId: 0, location: "" },
+    defaultValues: { amount: 0, merchant: "", merchantCategory: "", location: "" },
   });
 
   function onSubmit(values: z.infer<typeof txSchema>) {
