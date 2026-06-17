@@ -93,61 +93,62 @@ export default function Cards() {
             <RefreshCw size={16} className={isRefetching ? 'animate-spin' : ''} />
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2"><Plus size={16} /> Add Card</Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border-border">
-            <DialogHeader>
-              <DialogTitle>Add New Card</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField control={form.control} name="last4" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last 4 Digits</FormLabel>
-                    <FormControl><Input placeholder="4242" maxLength={4} {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="brand" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Card Brand</FormLabel>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {["visa", "mastercard", "amex", "discover"].map(b => (
-                            <SelectItem key={b} value={b}>{b.toUpperCase()}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField control={form.control} name="expiryMonth" render={({ field }) => (
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2"><Plus size={16} /> Add Card</Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card border-border">
+              <DialogHeader>
+                <DialogTitle>Add New Card</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField control={form.control} name="last4" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Expiry Month</FormLabel>
-                      <FormControl><Input type="number" min={1} max={12} {...field} /></FormControl>
+                      <FormLabel>Last 4 Digits</FormLabel>
+                      <FormControl><Input placeholder="4242" maxLength={4} {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <FormField control={form.control} name="expiryYear" render={({ field }) => (
+                  <FormField control={form.control} name="brand" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Expiry Year</FormLabel>
-                      <FormControl><Input type="number" min={2024} max={2040} {...field} /></FormControl>
+                      <FormLabel>Card Brand</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {["visa", "mastercard", "amex", "discover"].map(b => (
+                              <SelectItem key={b} value={b}>{b.toUpperCase()}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
-                </div>
-                <Button type="submit" className="w-full" disabled={createCard.isPending}>
-                  {createCard.isPending ? "Adding..." : "Add Card"}
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField control={form.control} name="expiryMonth" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expiry Month</FormLabel>
+                        <FormControl><Input type="number" min={1} max={12} {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="expiryYear" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expiry Year</FormLabel>
+                        <FormControl><Input type="number" min={2024} max={2040} {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={createCard.isPending}>
+                    {createCard.isPending ? "Adding..." : "Add Card"}
+                  </Button>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {isLoading ? (

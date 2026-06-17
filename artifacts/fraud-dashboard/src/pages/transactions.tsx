@@ -131,17 +131,17 @@ export default function Transactions() {
             <Search size={16} className={isRefetching ? 'animate-spin' : ''} />
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
-              <Plus size={16} /> New Transaction
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-card border-border">
-            <DialogHeader>
-              <DialogTitle>Submit Transaction</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2">
+                <Plus size={16} /> New Transaction
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card border-border">
+              <DialogHeader>
+                <DialogTitle>Submit Transaction</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField control={form.control} name="amount" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Amount ($)</FormLabel>
@@ -201,13 +201,14 @@ export default function Transactions() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                <Button type="submit" className="w-full" disabled={createTx.isPending}>
-                  {createTx.isPending ? "Analyzing..." : "Submit & Analyze"}
-                </Button>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                  <Button type="submit" className="w-full" disabled={createTx.isPending}>
+                    {createTx.isPending ? "Analyzing..." : "Submit & Analyze"}
+                  </Button>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
