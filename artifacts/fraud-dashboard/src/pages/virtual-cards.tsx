@@ -169,10 +169,17 @@ export default function VirtualCards() {
   const queryClient = useQueryClient();
   const { data: cards = [], refetch, isLoading, isRefetching } = useListVirtualCards();
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
+  const { toast } = useToast();
 
   const deactivate = useDeactivateVirtualCard({
     mutation: {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListVirtualCardsQueryKey() }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListVirtualCardsQueryKey() });
+        toast({ title: "Card deactivated", description: "Virtual card has been deactivated successfully." });
+      },
+      onError: () => {
+        toast({ title: "Error", description: "Failed to deactivate card.", variant: "destructive" });
+      },
     },
   });
 
