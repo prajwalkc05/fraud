@@ -1,5 +1,4 @@
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -21,16 +20,6 @@ import Security from "@/pages/security";
 import Notifications from "@/pages/notifications";
 import FraudCases from "@/pages/fraud-cases";
 import AuditLogs from "@/pages/audit-logs";
-
-// Create QueryClient once outside component
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30_000,
-    },
-  },
-});
 
 function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType; adminOnly?: boolean }) {
   const { user, isLoading } = useAuth();
@@ -105,16 +94,14 @@ function AppRouter() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AppRouter />
-          </WouterRouter>
-        </AuthProvider>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <TooltipProvider>
+      <AuthProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <AppRouter />
+        </WouterRouter>
+      </AuthProvider>
+      <Toaster />
+    </TooltipProvider>
   );
 }
 
