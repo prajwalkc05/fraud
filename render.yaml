@@ -1,3 +1,6 @@
+# Render Configuration - Backend API Only
+# Frontend is deployed separately on Netlify
+
 services:
   # Backend API Server
   - type: web
@@ -19,7 +22,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        value: https://fraud-sentinel-dashboard.onrender.com
+        value: https://fraud-sentinel-dashboard.netlify.app
       - key: PORT
         value: 8080
       - key: SMTP_HOST
@@ -32,20 +35,6 @@ services:
         sync: false
       - key: ADMIN_EMAIL
         value: hhr135696@gmail.com
-
-  # Frontend Dashboard
-  - type: web
-    name: fraud-sentinel-dashboard
-    runtime: static
-    buildCommand: cd artifacts/fraud-dashboard && pnpm install && pnpm run build
-    staticPublishPath: artifacts/fraud-dashboard/dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://fraud-sentinel-api.onrender.com/api
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
 
 # Database
 databases:
