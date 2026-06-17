@@ -1,6 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, usersTable, cardsTable, transactionsTable, fraudLogsTable } from "@workspace/db";
-import { eq, count, desc, ilike, and } from "drizzle-orm";
+import { User, Card, Transaction, FraudLog } from "@workspace/db";
 import {
   AdminListUsersQueryParams,
   AdminUpdateUserParams,
@@ -20,29 +19,23 @@ router.get("/admin/users", requireAuth, requireAdmin, async (req, res): Promise<
   const { page, limit, search } = parsed.data;
   const offset = ((page ?? 1) - 1) * (limit ?? 20);
 
-  const condition = search ? ilike(usersTable.email, `%${search}%`) : undefined;
+  const filter: any = search ? { email: { $regex: search, $options: "i" } } : {};
 
-  const [rows, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(usersTable)
-      .where(condition)
-      .orderBy(desc(usersTable.createdAt))
-      .limit(limit ?? 20)
-      .offset(offset),
-    db.select({ total: count() }).from(usersTable).where(condition),
+  const [rows, total] = await Promise.all([
+    User.find(filter).sort({ createdAt: -1 }).limit(limit ?? 20).skip(offset),
+    User.countDocuments(filter),
   ]);
 
   res.json({
     users: rows.map((u) => ({
-      id: u.id,
+      id: Number(u._id),
       email: u.email,
       name: u.name,
       role: u.role,
       status: u.status,
       createdAt: u.createdAt.toISOString(),
     })),
-    total: Number(total),
+    total,
     page: page ?? 1,
     limit: limit ?? 20,
   });
@@ -61,60 +54,46 @@ router.patch("/admin/users/:id", requireAuth, requireAdmin, async (req, res): Pr
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, params.data.id));
+  const user = await User.findById(params.data.id);
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
   }
 
-  const updates: Partial<typeof usersTable.$inferInsert> = {};
+  const updates: any = {};
   if (body.data.role) updates.role = body.data.role;
   if (body.data.status) updates.status = body.data.status;
 
-  const [updated] = await db
-    .update(usersTable)
-    .set(updates)
-    .where(eq(usersTable.id, params.data.id))
-    .returning();
+  const updated = await User.findByIdAndUpdate(params.data.id, updates, { new: true });
 
   res.json({
-    id: updated.id,
-    email: updated.email,
-    name: updated.name,
-    role: updated.role,
-    status: updated.status,
-    createdAt: updated.createdAt.toISOString(),
+    id: Number(updated!._id),
+    email: updated!.email,
+    name: updated!.name,
+    role: updated!.role,
+    status: updated!.status,
+    createdAt: updated!.createdAt.toISOString(),
   });
 });
 
 router.get("/admin/stats", requireAuth, requireAdmin, async (req, res): Promise<void> => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   const [
-    [{ totalUsers }],
-    [{ totalCards }],
-    [{ totalTransactions }],
-    [{ fraudToday }],
+    totalUsers,
+    totalCards,
+    totalTransactions,
+    fraudToday,
   ] = await Promise.all([
-    db.select({ totalUsers: count() }).from(usersTable),
-    db.select({ totalCards: count() }).from(cardsTable),
-    db.select({ totalTransactions: count() }).from(transactionsTable),
-    db
-      .select({ fraudToday: count() })
-      .from(transactionsTable)
-      .where(
-        and(
-          eq(transactionsTable.status, "declined"),
-        )
-      ),
+    User.countDocuments(),
+    Card.countDocuments(),
+    Transaction.countDocuments(),
+    Transaction.countDocuments({ status: "declined" }),
   ]);
 
   res.json({
-    totalUsers: Number(totalUsers),
-    totalCards: Number(totalCards),
-    totalTransactions: Number(totalTransactions),
-    fraudDetectedToday: Number(fraudToday),
+    totalUsers,
+    totalCards,
+    totalTransactions,
+    fraudDetectedToday: fraudToday,
     systemUptime: "99.97%",
     mlModelAccuracy: 94.3,
   });
@@ -129,27 +108,22 @@ router.get("/admin/fraud-logs", requireAuth, requireAdmin, async (req, res): Pro
   const { page, limit } = parsed.data;
   const offset = ((page ?? 1) - 1) * (limit ?? 20);
 
-  const [rows, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(fraudLogsTable)
-      .orderBy(desc(fraudLogsTable.createdAt))
-      .limit(limit ?? 20)
-      .offset(offset),
-    db.select({ total: count() }).from(fraudLogsTable),
+  const [rows, total] = await Promise.all([
+    FraudLog.find().sort({ createdAt: -1 }).limit(limit ?? 20).skip(offset),
+    FraudLog.countDocuments(),
   ]);
 
   res.json({
     logs: rows.map((l) => ({
-      id: l.id,
-      transactionId: l.transactionId,
+      id: Number(l._id),
+      transactionId: Number(l.transactionId),
       riskScore: l.riskScore,
       riskLevel: l.riskLevel,
       fraudProbability: l.fraudProbability,
       signals: l.signals,
       createdAt: l.createdAt.toISOString(),
     })),
-    total: Number(total),
+    total,
     page: page ?? 1,
     limit: limit ?? 20,
   });

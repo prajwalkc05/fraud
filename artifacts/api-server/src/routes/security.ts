@@ -1,14 +1,13 @@
 import { Router, type IRouter } from "express";
-import { db, loginHistoryTable } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { LoginHistory } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-function loginToJson(l: typeof loginHistoryTable.$inferSelect) {
+function loginToJson(l: any) {
   return {
-    id: l.id,
-    userId: l.userId,
+    id: Number(l._id),
+    userId: Number(l.userId),
     ipAddress: l.ipAddress ?? null,
     userAgent: l.userAgent ?? null,
     deviceFingerprint: l.deviceFingerprint ?? null,
@@ -21,28 +20,16 @@ function loginToJson(l: typeof loginHistoryTable.$inferSelect) {
 
 router.get("/security/login-history", requireAuth, async (req, res): Promise<void> => {
   const limit = Math.min(Number(req.query.limit ?? 20), 50);
-  const history = await db
-    .select()
-    .from(loginHistoryTable)
-    .where(eq(loginHistoryTable.userId, req.auth!.userId))
-    .orderBy(desc(loginHistoryTable.loginAt))
-    .limit(limit);
+  const history = await LoginHistory.find({ userId: req.auth!.userId }).sort({ loginAt: -1 }).limit(limit);
   res.json(history.map(loginToJson));
 });
 
 router.get("/security/devices", requireAuth, async (req, res): Promise<void> => {
-  // Return unique devices by fingerprint, most recent login first
-  const history = await db
-    .select()
-    .from(loginHistoryTable)
-    .where(eq(loginHistoryTable.userId, req.auth!.userId))
-    .orderBy(desc(loginHistoryTable.loginAt))
-    .limit(50);
+  const history = await LoginHistory.find({ userId: req.auth!.userId }).sort({ loginAt: -1 }).limit(50);
 
-  // Deduplicate by fingerprint, keeping most recent
   const seen = new Set<string>();
   const devices = history.filter((h) => {
-    const key = h.deviceFingerprint ?? h.userAgent ?? h.id.toString();
+    const key = h.deviceFingerprint ?? h.userAgent ?? h._id.toString();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -57,7 +44,7 @@ router.delete("/security/devices/:id/remove", requireAuth, async (req, res): Pro
     res.status(400).json({ error: "Invalid id" });
     return;
   }
-  await db.delete(loginHistoryTable).where(eq(loginHistoryTable.id, id));
+  await LoginHistory.findByIdAndDelete(id);
   res.json({ message: "Device removed" });
 });
 

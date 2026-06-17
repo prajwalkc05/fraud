@@ -1,14 +1,13 @@
 import { Router, type IRouter } from "express";
-import { db, notificationsTable } from "@workspace/db";
-import { eq, and, desc, count } from "drizzle-orm";
+import { Notification } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-function notifToJson(n: typeof notificationsTable.$inferSelect) {
+function notifToJson(n: any) {
   return {
-    id: n.id,
-    userId: n.userId,
+    id: Number(n._id),
+    userId: Number(n.userId),
     type: n.type,
     title: n.title,
     message: n.message,
@@ -22,28 +21,28 @@ function notifToJson(n: typeof notificationsTable.$inferSelect) {
 router.get("/notifications", requireAuth, async (req, res): Promise<void> => {
   const limit = Math.min(Number(req.query.limit ?? 20), 100);
   const unreadOnly = req.query.unread === "true";
-  const conditions = [eq(notificationsTable.userId, req.auth!.userId)];
-  if (unreadOnly) conditions.push(eq(notificationsTable.isRead, false));
+  const filter: any = { userId: req.auth!.userId };
+  if (unreadOnly) filter.isRead = false;
 
-  const [notifs, [{ total }], [{ unread }]] = await Promise.all([
-    db.select().from(notificationsTable).where(and(...conditions)).orderBy(desc(notificationsTable.createdAt)).limit(limit),
-    db.select({ total: count() }).from(notificationsTable).where(eq(notificationsTable.userId, req.auth!.userId)),
-    db.select({ unread: count() }).from(notificationsTable).where(and(eq(notificationsTable.userId, req.auth!.userId), eq(notificationsTable.isRead, false))),
+  const [notifs, total, unread] = await Promise.all([
+    Notification.find(filter).sort({ createdAt: -1 }).limit(limit),
+    Notification.countDocuments({ userId: req.auth!.userId }),
+    Notification.countDocuments({ userId: req.auth!.userId, isRead: false }),
   ]);
 
-  res.json({ notifications: notifs.map(notifToJson), total: Number(total), unread: Number(unread) });
+  res.json({ notifications: notifs.map(notifToJson), total, unread });
 });
 
 router.patch("/notifications/:id/read", requireAuth, async (req, res): Promise<void> => {
   const id = parseInt(String(req.params.id), 10);
-  const [notif] = await db.select().from(notificationsTable).where(and(eq(notificationsTable.id, id), eq(notificationsTable.userId, req.auth!.userId)));
+  const notif = await Notification.findOne({ _id: id, userId: req.auth!.userId });
   if (!notif) { res.status(404).json({ error: "Not found" }); return; }
-  await db.update(notificationsTable).set({ isRead: true }).where(eq(notificationsTable.id, id));
+  await Notification.findByIdAndUpdate(id, { isRead: true });
   res.json({ message: "Marked as read" });
 });
 
 router.patch("/notifications/read-all", requireAuth, async (req, res): Promise<void> => {
-  await db.update(notificationsTable).set({ isRead: true }).where(eq(notificationsTable.userId, req.auth!.userId));
+  await Notification.updateMany({ userId: req.auth!.userId }, { isRead: true });
   res.json({ message: "All notifications marked as read" });
 });
 

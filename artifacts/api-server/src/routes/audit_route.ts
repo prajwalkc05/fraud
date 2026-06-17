@@ -1,6 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, auditLogsTable } from "@workspace/db";
-import { desc, count, eq, and, gte } from "drizzle-orm";
+import { AuditLog } from "@workspace/db";
 import { requireAuth, requireAdmin } from "../middlewares/auth";
 
 const router: IRouter = Router();
@@ -10,15 +9,15 @@ router.get("/audit-logs", requireAuth, requireAdmin, async (req, res): Promise<v
   const page = Math.max(Number(req.query.page ?? 1), 1);
   const offset = (page - 1) * limit;
 
-  const [logs, [{ total }]] = await Promise.all([
-    db.select().from(auditLogsTable).orderBy(desc(auditLogsTable.createdAt)).limit(limit).offset(offset),
-    db.select({ total: count() }).from(auditLogsTable),
+  const [logs, total] = await Promise.all([
+    AuditLog.find().sort({ createdAt: -1 }).limit(limit).skip(offset),
+    AuditLog.countDocuments(),
   ]);
 
   res.json({
     logs: logs.map((l) => ({
-      id: l.id,
-      userId: l.userId,
+      id: Number(l._id),
+      userId: l.userId ? Number(l.userId) : null,
       action: l.action,
       resource: l.resource,
       resourceId: l.resourceId,
@@ -28,7 +27,7 @@ router.get("/audit-logs", requireAuth, requireAdmin, async (req, res): Promise<v
       status: l.status,
       createdAt: l.createdAt.toISOString(),
     })),
-    total: Number(total),
+    total,
     page,
     limit,
   });

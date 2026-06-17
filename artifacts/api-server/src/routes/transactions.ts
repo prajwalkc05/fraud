@@ -1,6 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, transactionsTable, cardsTable, alertsTable, fraudLogsTable, usersTable, fraudCasesTable } from "@workspace/db";
-import { eq, and, desc, ilike, or, count } from "drizzle-orm";
+import { Transaction, Card, Alert, FraudLog, User, FraudCase } from "@workspace/db";
 import {
   ListTransactionsQueryParams,
   CreateTransactionBody,
@@ -17,15 +16,15 @@ import { broadcast } from "../lib/websocket";
 
 const router: IRouter = Router();
 
-function txToJson(tx: typeof transactionsTable.$inferSelect) {
+function txToJson(tx: any) {
   return {
-    id: tx.id,
+    id: Number(tx._id),
     amount: tx.amount,
     merchant: tx.merchant,
     merchantCategory: tx.merchantCategory,
-    cardId: tx.cardId,
+    cardId: Number(tx.cardId),
     cardLast4: tx.cardLast4 ?? null,
-    userId: tx.userId,
+    userId: Number(tx.userId),
     status: tx.status,
     riskScore: tx.riskScore,
     riskLevel: tx.riskLevel,
@@ -34,7 +33,7 @@ function txToJson(tx: typeof transactionsTable.$inferSelect) {
     ipAddress: tx.ipAddress ?? null,
     deviceId: tx.deviceId ?? null,
     reviewNote: tx.reviewNote ?? null,
-    reviewedBy: tx.reviewedBy ?? null,
+    reviewedBy: tx.reviewedBy ? Number(tx.reviewedBy) : null,
     createdAt: tx.createdAt.toISOString(),
   };
 }
@@ -48,38 +47,28 @@ router.get("/transactions", requireAuth, async (req, res): Promise<void> => {
   const { page, limit, status, riskLevel, cardId, search } = parsed.data;
   const offset = ((page ?? 1) - 1) * (limit ?? 20);
 
-  const conditions = [];
+  const filter: any = {};
   if (req.auth!.role !== "admin") {
-    conditions.push(eq(transactionsTable.userId, req.auth!.userId));
+    filter.userId = req.auth!.userId;
   }
-  if (status) conditions.push(eq(transactionsTable.status, status));
-  if (riskLevel) conditions.push(eq(transactionsTable.riskLevel, riskLevel));
-  if (cardId) conditions.push(eq(transactionsTable.cardId, cardId));
+  if (status) filter.status = status;
+  if (riskLevel) filter.riskLevel = riskLevel;
+  if (cardId) filter.cardId = cardId;
   if (search) {
-    conditions.push(
-      or(
-        ilike(transactionsTable.merchant, `%${search}%`),
-        ilike(transactionsTable.merchantCategory, `%${search}%`)
-      )
-    );
+    filter.$or = [
+      { merchant: { $regex: search, $options: "i" } },
+      { merchantCategory: { $regex: search, $options: "i" } }
+    ];
   }
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  const [rows, [{ total }]] = await Promise.all([
-    db
-      .select()
-      .from(transactionsTable)
-      .where(whereClause)
-      .orderBy(desc(transactionsTable.createdAt))
-      .limit(limit ?? 20)
-      .offset(offset),
-    db.select({ total: count() }).from(transactionsTable).where(whereClause),
+  const [rows, total] = await Promise.all([
+    Transaction.find(filter).sort({ createdAt: -1 }).limit(limit ?? 20).skip(offset),
+    Transaction.countDocuments(filter),
   ]);
 
   res.json({
     transactions: rows.map(txToJson),
-    total: Number(total),
+    total,
     page: page ?? 1,
     limit: limit ?? 20,
   });
@@ -93,10 +82,7 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
   }
   const data = parsed.data;
 
-  const [card] = await db
-    .select()
-    .from(cardsTable)
-    .where(and(eq(cardsTable.id, data.cardId), eq(cardsTable.userId, req.auth!.userId)));
+  const card = await Card.findOne({ _id: data.cardId, userId: req.auth!.userId });
   if (!card) {
     res.status(404).json({ error: "Card not found" });
     return;
@@ -124,34 +110,30 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
     status = "approved";
   }
 
-  const [tx] = await db
-    .insert(transactionsTable)
-    .values({
-      amount: data.amount,
-      merchant: data.merchant,
-      merchantCategory: data.merchantCategory,
-      cardId: data.cardId,
-      cardLast4: card.last4,
-      userId: req.auth!.userId,
-      status,
-      riskScore: analysis.riskScore,
-      riskLevel: analysis.riskLevel,
-      fraudProbability: analysis.fraudProbability,
-      location: data.location,
-      ipAddress: data.ipAddress,
-      deviceId: data.deviceId,
-    })
-    .returning();
+  const tx = await Transaction.create({
+    amount: data.amount,
+    merchant: data.merchant,
+    merchantCategory: data.merchantCategory,
+    cardId: data.cardId,
+    cardLast4: card.last4,
+    userId: req.auth!.userId,
+    status,
+    riskScore: analysis.riskScore,
+    riskLevel: analysis.riskLevel,
+    fraudProbability: analysis.fraudProbability,
+    location: data.location,
+    ipAddress: data.ipAddress,
+    deviceId: data.deviceId,
+  });
 
-  await db.insert(fraudLogsTable).values({
-    transactionId: tx.id,
+  await FraudLog.create({
+    transactionId: tx._id,
     riskScore: analysis.riskScore,
     riskLevel: analysis.riskLevel,
     fraudProbability: analysis.fraudProbability,
     signals: analysis.signals,
   });
 
-  // Broadcast via WebSocket
   broadcast(
     {
       type: "transaction",
@@ -161,50 +143,45 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
     req.auth!.userId
   );
 
-  // High/critical: create alert, notification, fraud case, email
   if (analysis.riskScore >= 61) {
     const alertType = analysis.riskScore >= 81 ? "fraud_detected" : "high_risk";
-    await db.insert(alertsTable).values({
+    await Alert.create({
       userId: req.auth!.userId,
       type: alertType,
       message: `${status === "declined" ? "FRAUD DETECTED" : "High-risk transaction"}: $${data.amount.toFixed(2)} at ${data.merchant}`,
-      transactionId: tx.id,
+      transactionId: tx._id,
       isRead: false,
     });
 
-    // Create fraud case for critical
     if (analysis.riskScore >= 81) {
       const caseNumber = `FG-${Date.now().toString(36).toUpperCase()}`;
-      await db.insert(fraudCasesTable).values({
+      await FraudCase.create({
         caseNumber,
         userId: req.auth!.userId,
-        transactionId: tx.id,
+        transactionId: tx._id,
         status: "open",
         priority: "high",
         title: `Fraud Detected: $${data.amount.toFixed(2)} at ${data.merchant}`,
         description: `Automated fraud case. Risk score: ${analysis.riskScore}. Signals: ${analysis.signals.join("; ")}`,
-        riskScore: String(analysis.riskScore),
-        amountInvolved: String(data.amount),
+        riskScore: analysis.riskScore,
+        amountInvolved: data.amount,
       });
 
-      // Auto-block card on critical
-      await db
-        .update(cardsTable)
-        .set({ isBlocked: true, blockReason: `Auto-blocked: Fraud detected on transaction #${tx.id}` })
-        .where(eq(cardsTable.id, data.cardId));
+      await Card.findByIdAndUpdate(data.cardId, {
+        isBlocked: true,
+        blockReason: `Auto-blocked: Fraud detected on transaction #${tx._id}`
+      });
     }
 
-    // In-app notification
     void createNotification({
       userId: req.auth!.userId,
       type: alertType,
       title: status === "declined" ? "Fraud Detected — Card Blocked" : "High-Risk Transaction Flagged",
       message: `$${data.amount.toFixed(2)} at ${data.merchant} — Risk Score: ${analysis.riskScore}/100`,
-      metadata: { transactionId: tx.id, riskScore: analysis.riskScore },
+      metadata: { transactionId: Number(tx._id), riskScore: analysis.riskScore },
     });
 
-    // Email alert (fire-and-forget)
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, req.auth!.userId));
+    const user = await User.findById(req.auth!.userId);
     if (user) {
       void sendFraudAlert({
         userName: user.name,
@@ -214,13 +191,13 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
         riskScore: analysis.riskScore,
         riskLevel: analysis.riskLevel,
         signals: analysis.signals,
-        transactionId: tx.id,
+        transactionId: Number(tx._id),
         cardLast4: card.last4,
       });
     }
   }
 
-  await auditLog({ req, action: "transaction_created", resource: "transaction", resourceId: tx.id });
+  await auditLog({ req, action: "transaction_created", resource: "transaction", resourceId: Number(tx._id) });
 
   res.status(201).json(txToJson(tx));
 });
@@ -230,18 +207,13 @@ router.get("/transactions/:id", requireAuth, async (req, res): Promise<void> => 
   const params = GetTransactionParams.safeParse({ id: parseInt(rawId, 10) });
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
 
-  const conditions = [eq(transactionsTable.id, params.data.id)];
-  if (req.auth!.role !== "admin") conditions.push(eq(transactionsTable.userId, req.auth!.userId));
+  const filter: any = { _id: params.data.id };
+  if (req.auth!.role !== "admin") filter.userId = req.auth!.userId;
 
-  const [tx] = await db.select().from(transactionsTable).where(and(...conditions));
+  const tx = await Transaction.findOne(filter);
   if (!tx) { res.status(404).json({ error: "Transaction not found" }); return; }
 
-  // Fetch signals from fraud log
-  const [log] = await db
-    .select()
-    .from(fraudLogsTable)
-    .where(eq(fraudLogsTable.transactionId, tx.id))
-    .limit(1);
+  const log = await FraudLog.findOne({ transactionId: tx._id });
 
   res.json({ ...txToJson(tx), signals: log?.signals ?? [] });
 });
@@ -253,16 +225,16 @@ router.patch("/transactions/:id/review", requireAuth, async (req, res): Promise<
   const body = ReviewTransactionBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
-  const [tx] = await db.select().from(transactionsTable).where(eq(transactionsTable.id, params.data.id));
+  const tx = await Transaction.findById(params.data.id);
   if (!tx) { res.status(404).json({ error: "Transaction not found" }); return; }
 
-  const [updated] = await db
-    .update(transactionsTable)
-    .set({ status: body.data.decision, reviewNote: body.data.note ?? null, reviewedBy: req.auth!.userId })
-    .where(eq(transactionsTable.id, params.data.id))
-    .returning();
+  const updated = await Transaction.findByIdAndUpdate(
+    params.data.id,
+    { status: body.data.decision, reviewNote: body.data.note ?? null, reviewedBy: req.auth!.userId },
+    { new: true }
+  );
 
-  await auditLog({ req, action: "transaction_reviewed", resource: "transaction", resourceId: tx.id, details: body.data.decision });
+  await auditLog({ req, action: "transaction_reviewed", resource: "transaction", resourceId: Number(tx._id), details: body.data.decision });
   res.json(txToJson(updated));
 });
 
