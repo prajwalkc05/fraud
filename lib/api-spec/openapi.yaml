@@ -260,7 +260,7 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema: { type: string }
       responses:
         "200":
           description: Card detail
@@ -278,7 +278,7 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema: { type: string }
       requestBody:
         required: true
         content:

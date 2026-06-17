@@ -22,7 +22,7 @@ function txToJson(tx: any) {
     amount: tx.amount,
     merchant: tx.merchant,
     merchantCategory: tx.merchantCategory,
-    cardId: Number(tx.cardId),
+    cardId: String(tx.cardId),
     cardLast4: tx.cardLast4 ?? null,
     userId: Number(tx.userId),
     status: tx.status,

@@ -10,7 +10,7 @@ const router: IRouter = Router();
 
 function cardToJson(card: any) {
   return {
-    id: Number(card._id),
+    id: String(card._id),
     userId: Number(card.userId),
     last4: card.last4,
     brand: card.brand,
@@ -38,40 +38,36 @@ router.post("/cards", requireAuth, async (req, res): Promise<void> => {
     expiryYear: parsed.data.expiryYear,
     isBlocked: false
   });
-  await auditLog({ req, action: "card_added", resource: "card", resourceId: Number(card._id) });
+  await auditLog({ req, action: "card_added", resource: "card", resourceId: String(card._id) });
   res.status(201).json(cardToJson(card));
 });
 
 router.get("/cards/:id", requireAuth, async (req, res): Promise<void> => {
-  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const params = GetCardParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
-  const card = await Card.findOne({ _id: params.data.id, userId: req.auth!.userId });
+  const cardId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const card = await Card.findOne({ _id: cardId, userId: req.auth!.userId });
   if (!card) { res.status(404).json({ error: "Card not found" }); return; }
   res.json(cardToJson(card));
 });
 
 router.patch("/cards/:id/block", requireAuth, async (req, res): Promise<void> => {
-  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const params = BlockCardParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+  const cardId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const body = BlockCardBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
-  const filter: any = { _id: params.data.id };
+  const filter: any = { _id: cardId };
   if (req.auth!.role !== "admin") filter.userId = req.auth!.userId;
 
   const card = await Card.findOne(filter);
   if (!card) { res.status(404).json({ error: "Card not found" }); return; }
 
   const updated = await Card.findByIdAndUpdate(
-    params.data.id,
+    cardId,
     { isBlocked: body.data.blocked, blockReason: body.data.blocked ? (body.data.reason ?? "Blocked by user") : null },
     { new: true }
   );
 
   const action = body.data.blocked ? "card_blocked" : "card_unblocked";
-  await auditLog({ req, action, resource: "card", resourceId: Number(card._id) });
+  await auditLog({ req, action, resource: "card", resourceId: String(card._id) });
 
   if (body.data.blocked) {
     const user = await User.findById(card.userId);
