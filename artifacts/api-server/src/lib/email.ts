@@ -32,6 +32,10 @@ export interface EmailPayload {
   text?: string;
 }
 
+function formatAmount(amount: number): string {
+  return amount.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+}
+
 export async function sendEmail(payload: EmailPayload): Promise<boolean> {
   if (!SMTP_EMAIL || !SMTP_PASSWORD) {
     logger.warn("SMTP not configured — email skipped");
@@ -82,7 +86,7 @@ function fraudAlertHtml(opts: {
     <table style="width:100%;border-collapse:collapse;font-size:14px">
       <tr><td style="padding:8px 0;color:#8b949e">Transaction #</td><td style="padding:8px 0">#${opts.transactionId}</td></tr>
       <tr><td style="padding:8px 0;color:#8b949e">Cardholder</td><td style="padding:8px 0">${opts.userName}</td></tr>
-      <tr><td style="padding:8px 0;color:#8b949e">Amount</td><td style="padding:8px 0;font-weight:700">$${opts.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td></tr>
+      <tr><td style="padding:8px 0;color:#8b949e">Amount</td><td style="padding:8px 0;font-weight:700">${formatAmount(opts.amount)}</td></tr>
       <tr><td style="padding:8px 0;color:#8b949e">Merchant</td><td style="padding:8px 0">${opts.merchant}</td></tr>
       ${opts.cardLast4 ? `<tr><td style="padding:8px 0;color:#8b949e">Card</td><td style="padding:8px 0">•••• ${opts.cardLast4}</td></tr>` : ""}
     </table>
@@ -158,7 +162,7 @@ function passwordResetHtml(opts: { userName: string; resetToken: string; expires
 // Public alert senders
 export async function sendFraudAlert(opts: Parameters<typeof fraudAlertHtml>[0] & { userEmail: string }) {
   const html = fraudAlertHtml(opts);
-  const subject = `🚨 [FraudGuard] ${opts.riskLevel.toUpperCase()} Risk — $${opts.amount} at ${opts.merchant}`;
+  const subject = `🚨 [FraudGuard] ${opts.riskLevel.toUpperCase()} Risk — ${formatAmount(opts.amount)} at ${opts.merchant}`;
   await Promise.all([
     sendEmail({ to: opts.userEmail, subject, html }),
     sendEmail({ to: ADMIN_EMAIL, subject: `[ADMIN] ${subject}`, html }),

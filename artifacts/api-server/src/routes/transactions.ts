@@ -18,7 +18,7 @@ const router: IRouter = Router();
 
 function txToJson(tx: any) {
   return {
-    id: Number(tx._id),
+    id: String(tx._id),
     amount: tx.amount,
     merchant: tx.merchant,
     merchantCategory: tx.merchantCategory,
@@ -38,7 +38,9 @@ function txToJson(tx: any) {
   };
 }
 
-router.get("/transactions", requireAuth, async (req, res): Promise<void> => {
+function formatAmount(amount: number): string {
+  return amount.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+}, async (req, res): Promise<void> => {
   const parsed = ListTransactionsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -148,7 +150,7 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
     await Alert.create({
       userId: req.auth!.userId,
       type: alertType,
-      message: `${status === "declined" ? "FRAUD DETECTED" : "High-risk transaction"}: $${data.amount.toFixed(2)} at ${data.merchant}`,
+      message: `${status === "declined" ? "🚨 FRAUD DETECTED" : "⚠️ High-risk transaction"}: ${formatAmount(data.amount)} at ${data.merchant} — Risk Score: ${analysis.riskScore}/100`,
       transactionId: tx._id,
       isRead: false,
     });
@@ -176,9 +178,9 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
     void createNotification({
       userId: req.auth!.userId,
       type: alertType,
-      title: status === "declined" ? "Fraud Detected — Card Blocked" : "High-Risk Transaction Flagged",
-      message: `$${data.amount.toFixed(2)} at ${data.merchant} — Risk Score: ${analysis.riskScore}/100`,
-      metadata: { transactionId: Number(tx._id), riskScore: analysis.riskScore },
+      title: status === "declined" ? "🚨 Fraud Detected — Card Blocked" : "⚠️ High-Risk Transaction Flagged",
+      message: `${formatAmount(data.amount)} at ${data.merchant} — Risk Score: ${analysis.riskScore}/100`,
+      metadata: { transactionId: String(tx._id), riskScore: analysis.riskScore },
     });
 
     const user = await User.findById(req.auth!.userId);
@@ -191,23 +193,21 @@ router.post("/transactions", requireAuth, async (req, res): Promise<void> => {
         riskScore: analysis.riskScore,
         riskLevel: analysis.riskLevel,
         signals: analysis.signals,
-        transactionId: Number(tx._id),
+        transactionId: String(tx._id),
         cardLast4: card.last4,
       });
     }
   }
 
-  await auditLog({ req, action: "transaction_created", resource: "transaction", resourceId: Number(tx._id) });
+  await auditLog({ req, action: "transaction_created", resource: "transaction", resourceId: String(tx._id) });
 
   res.status(201).json(txToJson(tx));
 });
 
 router.get("/transactions/:id", requireAuth, async (req, res): Promise<void> => {
-  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const params = GetTransactionParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+  const txId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
-  const filter: any = { _id: params.data.id };
+  const filter: any = { _id: txId };
   if (req.auth!.role !== "admin") filter.userId = req.auth!.userId;
 
   const tx = await Transaction.findOne(filter);
@@ -219,22 +219,20 @@ router.get("/transactions/:id", requireAuth, async (req, res): Promise<void> => 
 });
 
 router.patch("/transactions/:id/review", requireAuth, async (req, res): Promise<void> => {
-  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const params = ReviewTransactionParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
+  const txId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const body = ReviewTransactionBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
-  const tx = await Transaction.findById(params.data.id);
+  const tx = await Transaction.findById(txId);
   if (!tx) { res.status(404).json({ error: "Transaction not found" }); return; }
 
   const updated = await Transaction.findByIdAndUpdate(
-    params.data.id,
+    txId,
     { status: body.data.decision, reviewNote: body.data.note ?? null, reviewedBy: req.auth!.userId },
     { new: true }
   );
 
-  await auditLog({ req, action: "transaction_reviewed", resource: "transaction", resourceId: Number(tx._id), details: body.data.decision });
+  await auditLog({ req, action: "transaction_reviewed", resource: "transaction", resourceId: String(tx._id), details: body.data.decision });
   res.json(txToJson(updated));
 });
 
