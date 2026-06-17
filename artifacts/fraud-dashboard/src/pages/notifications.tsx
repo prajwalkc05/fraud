@@ -36,7 +36,7 @@ export default function Notifications() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data, isLoading, refetch } = useListNotifications({}, { query: { refetchInterval: 15000, queryKey: [] } });
+  const { data, isLoading, refetch, isRefetching } = useListNotifications({}, { query: { refetchInterval: 15000, queryKey: [] } });
   const response = data as NotifListResponse | undefined;
 
   const markRead = useMarkNotificationRead({
@@ -69,8 +69,8 @@ export default function Notifications() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching} className="gap-2">
+            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
           {(response?.unread ?? 0) > 0 && (
             <Button size="sm" className="gap-2" onClick={() => markAll.mutate()} disabled={markAll.isPending}>

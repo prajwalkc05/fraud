@@ -87,7 +87,7 @@ export default function Transactions() {
     ...(riskFilter && riskFilter !== "all" ? { riskLevel: riskFilter as any } : {}),
   };
 
-  const { data, isLoading } = useListTransactions(params);
+  const { data, isLoading, refetch, isRefetching } = useListTransactions(params);
   const { data: cards } = useListCards();
   const createTx = useCreateTransaction();
 
@@ -126,7 +126,11 @@ export default function Transactions() {
           <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Monitor and review all card transactions</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching} className="gap-2">
+            <Search size={16} className={isRefetching ? 'animate-spin' : ''} />
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus size={16} /> New Transaction

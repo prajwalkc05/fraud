@@ -63,7 +63,7 @@ export default function FraudCases() {
   const [resolution, setResolution] = useState("");
   const [newStatus, setNewStatus] = useState("");
 
-  const { data, isLoading, refetch } = useListFraudCases(
+  const { data, isLoading, refetch, isRefetching } = useListFraudCases(
     { limit: 15, page, status: statusFilter === "all" ? undefined : statusFilter },
     { query: { refetchInterval: 15000, queryKey: [] } }
   );
@@ -106,8 +106,8 @@ export default function FraudCases() {
               <SelectItem value="closed">Closed</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="w-4 h-4" />
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
+            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>

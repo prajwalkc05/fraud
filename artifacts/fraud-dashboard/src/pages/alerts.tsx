@@ -3,7 +3,7 @@ import { getListAlertsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Bell, AlertTriangle, ShieldAlert, CreditCard, LogIn, Info, CheckCheck } from "lucide-react";
+import { Bell, AlertTriangle, ShieldAlert, CreditCard, LogIn, Info, CheckCheck, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 
@@ -24,7 +24,7 @@ const ALERT_COLORS: Record<string, string> = {
 };
 
 export default function Alerts() {
-  const { data: alerts, isLoading } = useListAlerts({ limit: 50 });
+  const { data: alerts, isLoading, refetch, isRefetching } = useListAlerts({ limit: 50 });
   const markRead = useMarkAlertRead();
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -52,7 +52,11 @@ export default function Alerts() {
             {unread > 0 ? `${unread} unread alert${unread > 1 ? "s" : ""}` : "All caught up"}
           </p>
         </div>
-        {unread > 0 && (
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching} className="gap-2">
+            <RefreshCw size={16} className={isRefetching ? 'animate-spin' : ''} />
+          </Button>
+          {unread > 0 && (
           <Button
             variant="outline"
             size="sm"
@@ -65,7 +69,8 @@ export default function Alerts() {
           >
             <CheckCheck size={14} /> Mark all read
           </Button>
-        )}
+          )}
+        </div>
       </div>
 
       {isLoading ? (

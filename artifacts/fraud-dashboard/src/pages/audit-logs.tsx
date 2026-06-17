@@ -32,7 +32,7 @@ const ACTION_COLORS: Record<string, string> = {
 
 export default function AuditLogs() {
   const [page, setPage] = useState(1);
-  const { data, isLoading, refetch } = useListAuditLogs({ limit: 50, page });
+  const { data, isLoading, refetch, isRefetching } = useListAuditLogs({ limit: 50, page });
 
   const logs = (data as any)?.logs as AuditLog[] ?? [];
   const total = (data as any)?.total ?? 0;
@@ -48,8 +48,8 @@ export default function AuditLogs() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">{total} total events</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()}>
-          <RefreshCw className="w-4 h-4" />
+        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
+          <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 

@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, CreditCard, Lock, Unlock, Shield } from "lucide-react";
+import { Plus, CreditCard, Lock, Unlock, Shield, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -41,7 +41,7 @@ const cardSchema = z.object({
 });
 
 export default function Cards() {
-  const { data: cards, isLoading } = useListCards();
+  const { data: cards, isLoading, refetch, isRefetching } = useListCards();
   const createCard = useCreateCard();
   const blockCard = useBlockCard();
   const qc = useQueryClient();
@@ -88,7 +88,11 @@ export default function Cards() {
           <h1 className="text-2xl font-bold tracking-tight">Card Management</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Manage and monitor your payment cards</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching} className="gap-2">
+            <RefreshCw size={16} className={isRefetching ? 'animate-spin' : ''} />
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2"><Plus size={16} /> Add Card</Button>
           </DialogTrigger>
