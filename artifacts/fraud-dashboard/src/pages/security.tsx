@@ -43,8 +43,8 @@ export default function Security() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: history = [], isLoading: histLoading, refetch: refetchHistory } = useGetLoginHistory({ limit: 20 });
-  const { data: devices = [], isLoading: devLoading, refetch: refetchDevices } = useGetTrustedDevices();
+  const { data: history = [], isLoading: histLoading, refetch: refetchHistory, isRefetching: isRefetchingHistory } = useGetLoginHistory({ limit: 20 });
+  const { data: devices = [], isLoading: devLoading, refetch: refetchDevices, isRefetching: isRefetchingDevices } = useGetTrustedDevices();
 
   const removeDevice = useRemoveDevice({
     mutation: {
@@ -73,8 +73,14 @@ export default function Security() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Monitor login activity and trusted devices</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => { refetchHistory(); refetchDevices(); }} className="gap-2">
-          <RefreshCw className="w-4 h-4" />
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => { refetchHistory(); refetchDevices(); }} 
+          disabled={isRefetchingHistory || isRefetchingDevices}
+          className="gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${(isRefetchingHistory || isRefetchingDevices) ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
