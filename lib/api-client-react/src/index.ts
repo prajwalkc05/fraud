@@ -103,7 +103,7 @@ export function useGenerateVirtualCard(opts?: { mutation?: Partial<UseMutationOp
 
 export function useDeactivateVirtualCard(opts?: { mutation?: Partial<UseMutationOptions<any, Error, any>> }) {
   return useMutation({
-    mutationFn: ({ id }: { id: number }) =>
+    mutationFn: ({ id }: { id: string }) =>
       fetchAPI(`/virtual-cards/${id}/deactivate`, {
         method: "PATCH",
       }),

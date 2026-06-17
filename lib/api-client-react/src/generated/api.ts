@@ -1973,7 +1973,7 @@ export const useGenerateVirtualCard = <TError = ErrorType<unknown>,
       return useMutation(getGenerateVirtualCardMutationOptions(options));
     }
 
-export const getDeactivateVirtualCardUrl = (id: number,) => {
+export const getDeactivateVirtualCardUrl = (id: string,) => {
 
 
 
@@ -1984,7 +1984,7 @@ export const getDeactivateVirtualCardUrl = (id: number,) => {
 /**
  * @summary Deactivate a virtual card
  */
-export const deactivateVirtualCard = async (id: number, options?: RequestInit): Promise<VirtualCard> => {
+export const deactivateVirtualCard = async (id: string, options?: RequestInit): Promise<VirtualCard> => {
 
   return customFetch<VirtualCard>(getDeactivateVirtualCardUrl(id),
   {
@@ -1999,8 +1999,8 @@ export const deactivateVirtualCard = async (id: number, options?: RequestInit): 
 
 
 export const getDeactivateVirtualCardMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deactivateVirtualCard>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deactivateVirtualCard>>, TError,{id: number}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deactivateVirtualCard>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deactivateVirtualCard>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['deactivateVirtualCard'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -2012,7 +2012,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deactivateVirtualCard>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deactivateVirtualCard>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
           return  deactivateVirtualCard(id,requestOptions)
@@ -2033,11 +2033,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Deactivate a virtual card
  */
 export const useDeactivateVirtualCard = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deactivateVirtualCard>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deactivateVirtualCard>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deactivateVirtualCard>>,
         TError,
-        {id: number},
+        {id: string},
         TContext
       > => {
       return useMutation(getDeactivateVirtualCardMutationOptions(options));

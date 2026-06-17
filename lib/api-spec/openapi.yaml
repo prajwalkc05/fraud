@@ -521,7 +521,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Deactivated
@@ -1206,7 +1206,7 @@ components:
       required: [id, userId, cardNumber, last4, brand, cvv, expiryMonth, expiryYear, isActive, usageLimit, timesUsed, createdAt]
       properties:
         id:
-          type: integer
+          type: string
         userId:
           type: integer
         cardNumber:

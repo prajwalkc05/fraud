@@ -276,7 +276,7 @@ export interface FraudLogListResponse {
 }
 
 export interface VirtualCard {
-  id: number;
+  id: string;
   userId: number;
   cardNumber: string;
   last4: string;

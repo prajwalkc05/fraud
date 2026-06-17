@@ -7,7 +7,7 @@ const router: IRouter = Router();
 
 function vcToJson(vc: any) {
   return {
-    id: Number(vc._id),
+    id: String(vc._id),
     userId: Number(vc.userId),
     cardNumber: vc.cardNumber,
     last4: vc.last4,
@@ -76,21 +76,16 @@ router.post("/virtual-cards/generate", requireAuth, async (req, res): Promise<vo
 });
 
 router.patch("/virtual-cards/:id/deactivate", requireAuth, async (req, res): Promise<void> => {
-  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const params = DeactivateVirtualCardParams.safeParse({ id: parseInt(rawId, 10) });
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
+  const vcId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
-  const vc = await VirtualCard.findOne({ _id: params.data.id, userId: req.auth!.userId });
+  const vc = await VirtualCard.findOne({ _id: vcId, userId: req.auth!.userId });
 
   if (!vc) {
     res.status(404).json({ error: "Virtual card not found" });
     return;
   }
 
-  const updated = await VirtualCard.findByIdAndUpdate(params.data.id, { isActive: false }, { new: true });
+  const updated = await VirtualCard.findByIdAndUpdate(vcId, { isActive: false }, { new: true });
 
   res.json(vcToJson(updated));
 });

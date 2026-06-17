@@ -453,7 +453,7 @@ export const ListFraudLogsResponse = zod.object({
  * @summary List user's virtual cards
  */
 export const ListVirtualCardsResponseItem = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "userId": zod.number(),
   "cardNumber": zod.string(),
   "last4": zod.string(),
@@ -488,11 +488,11 @@ export const GenerateVirtualCardBody = zod.object({
  * @summary Deactivate a virtual card
  */
 export const DeactivateVirtualCardParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const DeactivateVirtualCardResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "userId": zod.number(),
   "cardNumber": zod.string(),
   "last4": zod.string(),

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 
 type VirtualCard = {
-  id: number;
+  id: string;
   cardNumber: string;
   last4: string;
   brand: string;
@@ -168,7 +168,7 @@ function GenerateDialog({ onSuccess }: { onSuccess: () => void }) {
 export default function VirtualCards() {
   const queryClient = useQueryClient();
   const { data: cards = [], refetch, isLoading, isRefetching } = useListVirtualCards();
-  const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const deactivate = useDeactivateVirtualCard({
@@ -183,7 +183,7 @@ export default function VirtualCards() {
     },
   });
 
-  const toggleReveal = (id: number) => {
+  const toggleReveal = (id: string) => {
     setRevealedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
