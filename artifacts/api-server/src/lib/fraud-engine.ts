@@ -24,11 +24,20 @@ export function analyzeFraud(ctx: TransactionContext): FraudSignals {
   let score = 0;
 
   // --- Amount-based scoring ---
-  if (ctx.amount > 10000) {
-    score += 35;
+  if (ctx.amount >= 1_000_000) {
+    score += 80;
+    signals.push("Extremely suspicious amount (>$1,000,000) — likely fraudulent");
+  } else if (ctx.amount >= 100_000) {
+    score += 65;
+    signals.push("Extremely large transaction amount (>$100,000)");
+  } else if (ctx.amount >= 50_000) {
+    score += 55;
+    signals.push("Very suspicious transaction amount (>$50,000)");
+  } else if (ctx.amount > 10000) {
+    score += 40;
     signals.push("Very large transaction amount (>$10,000)");
   } else if (ctx.amount > 5000) {
-    score += 28;
+    score += 30;
     signals.push("Large transaction amount (>$5,000)");
   } else if (ctx.amount > 2000) {
     score += 20;
