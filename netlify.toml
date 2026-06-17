@@ -1,13 +1,13 @@
 [build]
   base = "."
-  command = "npm install -g pnpm && pnpm install --frozen-lockfile --ignore-scripts && pnpm run typecheck:libs && cd artifacts/fraud-dashboard && pnpm run build"
+  command = "pnpm install --no-frozen-lockfile && pnpm run typecheck:libs && cd artifacts/fraud-dashboard && pnpm run build"
   publish = "artifacts/fraud-dashboard/dist/public"
 
 [build.environment]
   NODE_VERSION = "20"
   NODE_ENV = "production"
   VITE_API_URL = "https://fraud-9lts.onrender.com/api"
-  PNPM_VERSION = "9"
+  PNPM_VERSION = "10"
 
 [[redirects]]
   from = "/*"
