@@ -2,7 +2,7 @@ import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/sidebar";
 
 import Login from "@/pages/login";

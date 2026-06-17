@@ -21,12 +21,12 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <App />
         </AuthProvider>
-      </ErrorBoundary>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
