@@ -7,11 +7,11 @@ const router: IRouter = Router();
 
 function caseToJson(c: any) {
   return {
-    id: Number(c._id),
+    id: String(c._id),
     caseNumber: c.caseNumber,
     userId: Number(c.userId),
-    transactionId: c.transactionId ? Number(c.transactionId) : null,
-    assignedTo: c.assignedTo ? Number(c.assignedTo) : null,
+    transactionId: c.transactionId ? String(c.transactionId) : null,
+    assignedTo: c.assignedTo ? String(c.assignedTo) : null,
     status: c.status,
     priority: c.priority,
     title: c.title,
@@ -44,7 +44,7 @@ router.get("/fraud-cases", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/fraud-cases/:id", requireAuth, async (req, res): Promise<void> => {
-  const id = parseInt(String(req.params.id), 10);
+  const id = String(req.params.id);
   const filter: any = { _id: id };
   if (req.auth!.role !== "admin") filter.userId = req.auth!.userId;
 
@@ -53,11 +53,14 @@ router.get("/fraud-cases/:id", requireAuth, async (req, res): Promise<void> => {
   res.json(caseToJson(fc));
 });
 
-router.patch("/fraud-cases/:id", requireAuth, requireAdmin, async (req, res): Promise<void> => {
-  const id = parseInt(String(req.params.id), 10);
+router.patch("/fraud-cases/:id", requireAuth, async (req, res): Promise<void> => {
+  const id = String(req.params.id);
   const { status, priority, resolution, assignedTo } = req.body ?? {};
 
-  const fc = await FraudCase.findById(id);
+  const filter: any = { _id: id };
+  if (req.auth!.role !== "admin") filter.userId = req.auth!.userId;
+
+  const fc = await FraudCase.findOne(filter);
   if (!fc) { res.status(404).json({ error: "Case not found" }); return; }
 
   const updates: any = { updatedAt: new Date() };

@@ -273,7 +273,7 @@ export function useListFraudCases(opts?: { query?: Partial<UseQueryOptions> }) {
 
 export function useUpdateFraudCase(opts?: { mutation?: Partial<UseMutationOptions<any, Error, any>> }) {
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
       fetchAPI(`/fraud-cases/${id}`, {
         method: "PATCH",
         body: JSON.stringify(data),

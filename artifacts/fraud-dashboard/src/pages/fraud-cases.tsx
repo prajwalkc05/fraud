@@ -17,10 +17,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 type FraudCase = {
-  id: number;
+  id: string;
   caseNumber: string;
   userId: number;
-  transactionId?: number | null;
+  transactionId?: string | null;
   status: string;
   priority: string;
   title: string;
