@@ -4,7 +4,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
-import "@/lib/api";
 import { Sidebar } from "@/components/sidebar";
 
 import Login from "@/pages/login";
