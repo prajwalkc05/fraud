@@ -68,7 +68,7 @@ export default function Cards() {
     );
   }
 
-  function toggleBlock(id: number, isBlocked: boolean) {
+  function toggleBlock(id: string, isBlocked: boolean) {
     blockCard.mutate(
       { id, data: { blocked: !isBlocked, reason: !isBlocked ? "Manually blocked by user" : undefined } },
       {

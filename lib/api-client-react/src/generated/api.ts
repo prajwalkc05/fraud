@@ -897,7 +897,7 @@ export const useCreateCard = <TError = ErrorType<unknown>,
       return useMutation(getCreateCardMutationOptions(options));
     }
 
-export const getGetCardUrl = (id: number,) => {
+export const getGetCardUrl = (id: string,) => {
 
 
 
@@ -908,7 +908,7 @@ export const getGetCardUrl = (id: number,) => {
 /**
  * @summary Get card details
  */
-export const getCard = async (id: number, options?: RequestInit): Promise<Card> => {
+export const getCard = async (id: string, options?: RequestInit): Promise<Card> => {
 
   return customFetch<Card>(getGetCardUrl(id),
   {
@@ -923,14 +923,14 @@ export const getCard = async (id: number, options?: RequestInit): Promise<Card> 
 
 
 
-export const getGetCardQueryKey = (id: number,) => {
+export const getGetCardQueryKey = (id: string,) => {
     return [
     `/api/cards/${id}`
     ] as const;
     }
 
 
-export const getGetCardQueryOptions = <TData = Awaited<ReturnType<typeof getCard>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetCardQueryOptions = <TData = Awaited<ReturnType<typeof getCard>>, TError = ErrorType<unknown>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -957,7 +957,7 @@ export type GetCardQueryError = ErrorType<unknown>
  */
 
 export function useGetCard<TData = Awaited<ReturnType<typeof getCard>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -974,7 +974,7 @@ export function useGetCard<TData = Awaited<ReturnType<typeof getCard>>, TError =
 
 
 
-export const getBlockCardUrl = (id: number,) => {
+export const getBlockCardUrl = (id: string,) => {
 
 
 
@@ -985,7 +985,7 @@ export const getBlockCardUrl = (id: number,) => {
 /**
  * @summary Block or unblock a card
  */
-export const blockCard = async (id: number,
+export const blockCard = async (id: string,
     cardBlockInput: CardBlockInput, options?: RequestInit): Promise<Card> => {
 
   return customFetch<Card>(getBlockCardUrl(id),
@@ -1002,8 +1002,8 @@ export const blockCard = async (id: number,
 
 
 export const getBlockCardMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof blockCard>>, TError,{id: number;data: BodyType<CardBlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof blockCard>>, TError,{id: number;data: BodyType<CardBlockInput>}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof blockCard>>, TError,{id: string;data: BodyType<CardBlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof blockCard>>, TError,{id: string;data: BodyType<CardBlockInput>}, TContext> => {
 
 const mutationKey = ['blockCard'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -1015,7 +1015,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof blockCard>>, {id: number;data: BodyType<CardBlockInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof blockCard>>, {id: string;data: BodyType<CardBlockInput>}> = (props) => {
           const {id,data} = props ?? {};
 
           return  blockCard(id,data,requestOptions)
@@ -1036,11 +1036,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Block or unblock a card
  */
 export const useBlockCard = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof blockCard>>, TError,{id: number;data: BodyType<CardBlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof blockCard>>, TError,{id: string;data: BodyType<CardBlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof blockCard>>,
         TError,
-        {id: number;data: BodyType<CardBlockInput>},
+        {id: string;data: BodyType<CardBlockInput>},
         TContext
       > => {
       return useMutation(getBlockCardMutationOptions(options));

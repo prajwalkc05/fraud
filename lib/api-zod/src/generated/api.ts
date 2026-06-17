@@ -216,7 +216,7 @@ export const CreateCardBody = zod.object({
  * @summary Get card details
  */
 export const GetCardParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const GetCardResponse = zod.object({
@@ -236,7 +236,7 @@ export const GetCardResponse = zod.object({
  * @summary Block or unblock a card
  */
 export const BlockCardParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const BlockCardBody = zod.object({
