@@ -173,13 +173,17 @@ export default function Transactions() {
                     <FormLabel>Card</FormLabel>
                     <FormControl>
                       <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value ? String(field.value) : undefined}>
-                        <SelectTrigger><SelectValue placeholder="Select card" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={cards && cards.length > 0 ? "Select card" : "No cards available"} /></SelectTrigger>
                         <SelectContent>
-                          {(cards ?? []).filter((c) => !c.isBlocked).map((c) => (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.brand.toUpperCase()} ···· {c.last4}
-                            </SelectItem>
-                          ))}
+                          {cards && cards.length > 0 ? (
+                            (cards ?? []).filter((c) => !c.isBlocked).map((c) => (
+                              <SelectItem key={c.id} value={String(c.id)}>
+                                {c.brand.toUpperCase()} ···· {c.last4}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="none" disabled>No cards found - add a card first</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </FormControl>
