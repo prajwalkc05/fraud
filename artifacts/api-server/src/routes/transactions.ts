@@ -3,8 +3,6 @@ import { Transaction, Card, Alert, FraudLog, User, FraudCase } from "@workspace/
 import {
   ListTransactionsQueryParams,
   CreateTransactionBody,
-  GetTransactionParams,
-  ReviewTransactionParams,
   ReviewTransactionBody,
 } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
@@ -40,7 +38,9 @@ function txToJson(tx: any) {
 
 function formatAmount(amount: number): string {
   return amount.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
-}, async (req, res): Promise<void> => {
+}
+
+router.get("/transactions", requireAuth, async (req, res): Promise<void> => {
   const parsed = ListTransactionsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
